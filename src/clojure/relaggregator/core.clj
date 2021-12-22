@@ -45,7 +45,7 @@
   (let
     [[pri-v ts hn an pid msgid sd-msg] (s/split log #" " 7)
      [pri v] (rest (s/split pri-v #"<|>"))
-     [str-d-bracket msg] (s/split sd-msg #"- |] ")
+     [str-d-bracket msg] (s/split sd-msg #"- |] " 1)
      str-d (parse-structured-data
              (s/replace str-d-bracket #"^\[|]$" ""))]
     (make-syslog-record pri v ts hn an pid msgid str-d msg)))
