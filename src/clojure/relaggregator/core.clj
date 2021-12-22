@@ -2,8 +2,7 @@
   (:require
     [clojure.core.async
      :as a
-     :refer [>! <! >!! <!! go chan buffer close! thread
-             alts! alts!! timeout]])
+     :refer [>! <! go chan]])
   (:import
     (relaggregator.LogServer
       LogServer)))
@@ -14,15 +13,23 @@
   (fn [msg] (doseq [ch channels] (go (>! ch msg)))))
 
 
+(defn metrics-processor []
+  (let [in (chan)]
+    (go (while true (println (str (<! in) "--metrics"))))
+    in))
+
+(defn main-processor []
+  (let [in (chan)]
+    (go (while true (println (str (<! in) "--main"))))
+    in))
+
 (defn -main
   [& _args]
   (println "Started")
-  (let [ch1 (chan)
-        ch2 (chan)
+  (let [metrics-ch (metrics-processor)
+        main-ch (main-processor)
         port 5000
         reader (.getReader (new LogServer port))
-        router (router-maker [ch1 ch2])]
+        router (router-maker [metrics-ch main-ch])]
     (println (str "Started on port: " port))
-    (go (while true (println (str (<! ch1) "---ch1"))))
-    (go (while true (println (str (<! ch2) "---ch2"))))
     (while true (router (.readLine reader)))))
