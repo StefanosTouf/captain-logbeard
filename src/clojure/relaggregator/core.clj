@@ -2,7 +2,7 @@
   (:require
     [clojure.core.async
      :as a
-     :refer [>! <! go chan]]
+     :refer [>! <! go chan pipeline >!! <!! buffer]]
     [clojure.string :as s])
   (:import
     (relaggregator.LogServer
@@ -45,7 +45,7 @@
   (let
     [[pri-v ts hn an pid msgid sd-msg] (s/split log #" " 7)
      [pri v] (rest (s/split pri-v #"<|>"))
-     [str-d-bracket msg] (s/split sd-msg #"- |] " 1)
+     [str-d-bracket msg] (s/split sd-msg #"- |] " 2)
      str-d (parse-structured-data
              (s/replace str-d-bracket #"^\[|]$" ""))]
     (make-syslog-record pri v ts hn an pid msgid str-d msg)))
@@ -53,25 +53,40 @@
 
 (defn metrics-processor
   []
-  (let [in (chan)]
+  (let [in (chan (buffer 1024))]
     (go (while true (println (str (<! in) "--metrics"))))
     in))
 
 
-(defn main-processor
+(def process (map #(syslog-to-record %)))
+
+
+(defn printer
   []
-  (let [in (chan)]
-    (go (while true (println (syslog-to-record (<! in)))))
+  (let [in (chan (buffer 1024))]
+    (go (while true (println (<! in))))
     in))
+
+
+(defn process-node
+  []
+  (let [in (chan (buffer 1024))
+        out (printer)
+        _   (pipeline 3 out process in)]
+    in))
+
+
+(def port 5000)
 
 
 (defn -main
   [& _args]
-  (println "Started")
+  (println (str "Started on port: " port))
   (let [metrics-ch (metrics-processor)
-        main-ch (main-processor)
-        port 5000
-        reader (.getReader (new LogServer port))
-        router (router-maker [metrics-ch main-ch])]
-    (println (str "Started on port: " port))
-    (while true (router (.readLine reader)))))
+        main-ch    (process-node)
+        reader     (.getReader (new LogServer port))]
+    (while true (let [msg (.readLine reader)]
+                      (go (>! main-ch msg))
+                      (go (>! metrics-ch msg))))))
+
+
