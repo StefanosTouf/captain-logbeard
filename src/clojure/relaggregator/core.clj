@@ -3,8 +3,14 @@
     [clojure.core.async
      :as a
      :refer [>! <! go chan pipeline >!! <!! buffer]]
-    [clojure.string :as s])
+    [clojure.java.jdbc :refer [with-db-connection]]
+    [clojure.string :as s]
+    [relaggregator.database :refer [insert]])
   (:import
+    (java.sql
+      Timestamp)
+    (java.time
+      Instant)
     (relaggregator.LogServer
       LogServer)))
 
@@ -12,32 +18,33 @@
 (set! *warn-on-reflection* true)
 
 
-(defn router-maker
-  [channels]
-  (fn [msg] (doseq [ch channels] (go (>! ch msg)))))
+;; (defn make-syslog-record
+;;   [priority version timestamp hostname app-name procid msgid structured-data message]
+;;   {:priority priority
+;;    :version version
+;;    :timestamp timestamp
+;;    :hostname hostname
+;;    :app_name app-name
+;;    :process_id procid
+;;    :message_id msgid
+;;    :structured-data structured-data
+;;    :message message})
 
 
-(defn make-syslog-record
-  [priority version timestamp hostname app-name procid msgid structured-data message]
-  {:header {:priority priority
-            :version version
-            :timestamp timestamp
-            :hostname hostname
-            :app-name app-name
-            :process-id procid
-            :message-id msgid}
-   :structured-data structured-data
-   :message message})
+(defn type-parser
+  [parser value]
+  (if (or (= value "") (= value "-")) nil (parser value)))
 
 
-(defn parse-structured-data
-  [sd-str]
-  (let [[id & params] (s/split sd-str #" |=")]
-    (apply hash-map
-           (cons :sd-id
-                 (cons id (loop [[k v & params] params acc ()]
-                            (if-not v acc
-                                    (recur params (cons (keyword k) (cons v acc))))))))))
+(defn id
+  [v]
+  v)
+
+
+(defn parse-timestamp
+  [^String v]
+  (Timestamp/from
+    (Instant/parse v)))
 
 
 (defn syslog-to-record
@@ -46,34 +53,34 @@
     [[pri-v ts hn an pid msgid sd-msg] (s/split log #" " 7)
      [pri v] (rest (s/split pri-v #"<|>"))
      [str-d-bracket msg] (s/split sd-msg #"- |] " 2)
-     str-d (parse-structured-data
-             (s/replace str-d-bracket #"^\[|]$" ""))]
-    (make-syslog-record pri v ts hn an pid msgid str-d msg)))
+     str-d (s/replace str-d-bracket #"^\[|]$" "")]
+    [(type-parser read-string pri)
+     (type-parser read-string v)
+     (type-parser parse-timestamp ts)
+     (type-parser id  hn)
+     (type-parser id an)
+     (type-parser read-string pid)
+     (type-parser id msgid)
+     (type-parser id str-d)
+     (type-parser id msg)]))
 
 
 (defn metrics-processor
   []
-  (let [in (chan (buffer 1024))]
-    (go (while true (println (str (<! in) "--metrics"))))
+  (let [in (chan (buffer 1))]
+    (go (while true (str (<! in) "--metrics")))
     in))
-
-
-(def process (map #(syslog-to-record %)))
 
 
 (defn printer
   []
-  (let [in (chan (buffer 1024))]
-    (go (while true (println (<! in))))
-    in))
-
-
-(defn process-node
-  []
-  (let [in (chan (buffer 1024))
-        out (printer)
-        _   (pipeline 3 out process in)]
-    in))
+  (let [in (chan (buffer 100))]
+    (go
+        (loop [inserts []]
+          (if (= 100 (count inserts))
+            (do (insert inserts) (recur [(<! in)]))
+            (recur  (conj inserts (<! in))))))
+      in))
 
 
 (def port 5000)
@@ -83,10 +90,10 @@
   [& _args]
   (println (str "Started on port: " port))
   (let [metrics-ch (metrics-processor)
-        main-ch    (process-node)
+        main-ch    (printer)
         reader     (.getReader (new LogServer port))]
     (while true (let [msg (.readLine reader)]
-                      (go (>! main-ch msg))
-                      (go (>! metrics-ch msg))))))
+                  (go (->> msg syslog-to-record (>! main-ch)))
+                  (go (->> msg syslog-to-record (>! metrics-ch)))))))
 
 

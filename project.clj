@@ -7,6 +7,10 @@
   :main relaggregator.core
  :java-source-paths ["src/java"]
   :dependencies [[org.clojure/clojure "1.10.0"] 
-                 [org.clojure/core.async "1.5.648"]]
+                 [org.clojure/core.async "1.5.648"]
+                 [com.github.seancorfield/next.jdbc "1.2.761"]
+                 [org.postgresql/postgresql "42.3.1"]
+                 [org.clojure/java.jdbc "0.7.12"]
+                 [clojure.jdbc/clojure.jdbc-c3p0 "0.3.1"]]
   :javac-options ["-target" "17" "-source" "17"]
   :repl-options {:init-ns relaggregator.core})
