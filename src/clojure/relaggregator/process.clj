@@ -1,6 +1,12 @@
 (ns relaggregator.process
   (:require
-    [clojure.string :as s])
+    [clojure.core.async
+     :as a
+     :refer [>! <! go chan pipeline >!! <!! buffer]]
+    [clojure.string :as s]
+    [relaggregator.config :as conf]
+    [relaggregator.database :as db]
+    )
   (:import
     (java.sql
       Timestamp)
@@ -44,3 +50,22 @@
      (type-parser id str-d)
      (type-parser id msg)]))
 
+
+(defn metrics-processor
+  []
+  (let [in (chan (buffer 1))]
+    (go (while true (str (<! in) "--metrics")))
+    in))
+
+
+(defn printer
+  []
+  (let [buff-size (conf/config :logs-per-write)
+        in        (chan (buffer buff-size))]
+    (go
+      (loop [inserts []]
+        (let [incoming (<! in)]
+          (if (or (= incoming :process/shutdown) (= buff-size (count inserts)))
+            (do (db/insert inserts) (recur [incoming]))
+            (recur  (conj inserts incoming))))))
+    in))
