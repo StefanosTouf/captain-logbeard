@@ -24,7 +24,7 @@
         (> nils retries) (do (println "Too many nulls, restarting...")
                              (>!! main-ch :process/shutdown)
                              (.close logserver)
-                             (-main))
+                             (apply -main _args))
         msg              (do (go (->> msg p/syslog-to-record (>! main-ch)))
                              (go (->> msg p/syslog-to-record (>! metrics-ch)))
                              (recur (.readLine reader) 0))
