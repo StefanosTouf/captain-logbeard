@@ -4,7 +4,7 @@ Captain logbeard is at your service to aggregate, process and forward your appli
 
 ## Meet the captain
 
-Logbeard is a simple man, living a simple life, and he is proud of it! He consists of a very small codebase that enables him to do one thing, and do it well; get your logs from your application to a relational database (or burry them in a deserted island, whatever floats your boat. See what i did there?)
+Logbeard is a simple man, living a simple life, and he is proud of it! He consists of a very small codebase that enables him to do one thing, and do it well; get your logs from your application to a relational database (or burry them in a deserted island, whatever floats your boat. See what i did there?).
 
 ## Sample Use
 ```
