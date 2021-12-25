@@ -1,10 +1,10 @@
 (ns relaggregator.core
+  (:gen-class)
   (:require
     [clojure.core.async
      :as a
      :refer [>! <! go chan pipeline >!! <!! buffer]]
     [relaggregator.config :as conf]
-    [relaggregator.database :as db]
     [relaggregator.process :as p])
   (:import
     (relaggregator.LogServer
