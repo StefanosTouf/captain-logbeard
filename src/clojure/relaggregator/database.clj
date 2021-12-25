@@ -33,19 +33,16 @@
 (defn init-db
   []
   (let [table-name   (conf/config :table-name)
-        drop-table   (str "drop table " (name table-name))
-        create-table (jdbc/create-table-ddl
-                       table-name
-                       [[:priority        :int]
-                        [:version         :int]
-                        [:timestamp       :timestamp]
-                        [:hostname        :varchar]
-                        [:app_name        :varchar]
-                        [:process_id      :int]
-                        [:message_id      :varchar]
-                        [:structured_data :varchar]
-                        [:message         :varchar]])]
-    (jdbc/execute!       spec [drop-table])
+        create-table   (str "create table if not exists " (name table-name)
+                            "(priority        INT,
+                              version         INT,
+                              timestamp       TIMESTAMP,
+                              hostname        VARCHAR,
+                              app_name        VARCHAR,
+                              process_id      INT,
+                              message_id      VARCHAR,
+                              structured_data VARCHAR,
+                              message         VARCHAR);")]
     (jdbc/db-do-commands spec [create-table])))
 
 

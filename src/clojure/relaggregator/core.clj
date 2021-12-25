@@ -5,7 +5,8 @@
      :as a
      :refer [>! <! go chan pipeline >!! <!! buffer]]
     [relaggregator.config :as conf]
-    [relaggregator.process :as p])
+    [relaggregator.process :as p]
+    [relaggregator.database :as db])
   (:import
     (relaggregator.LogServer
       LogServer)))
@@ -17,6 +18,7 @@
         port         (conf/config :port)
         metrics-ch   (p/metrics-processor)
         main-ch      (p/printer)
+        _            (db/init-db)
         logserver    (new LogServer port)
         reader       (.getReader logserver)]
     (loop [msg (.readLine reader) nils 0]
