@@ -25,12 +25,12 @@ docker run -it \
 ```
 
 ## Environment Variables
-```java
-PORT=5000 \\what port logbeard exposes a tcp socket
-NULL_RETRIES=20 \\how many times logbeard will accept failing to read a log before restarting and waiting for a new client
-LOGS_PER_WRITE=100 \\how many writes to the database will happen at a time
-DB_PORT=5432 \\what port to search for the database
-DB_TABLE_NAME=logs \\where to store the logs
+```
+PORT=5000 //what port logbeard exposes a tcp socket on
+NULL_RETRIES=20 //how many times logbeard will accept failing to read a log before restarting and waiting for a new client
+LOGS_PER_WRITE=100 //how many writes to the database will happen at a time
+DB_PORT=5432 //what port to search for the database
+DB_TABLE_NAME=logs //where to store the logs
 DB_NAME=postgres
 DB_USER=postgres
 DB_PASSWORD=postgres
