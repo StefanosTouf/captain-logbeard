@@ -54,7 +54,7 @@ docker run --name logspout -t --network mock-net --rm --env DEBUG=1 \
 * ToDo
 
 ## Outputs
-Currently, only postgres is supported. You can customize the table where the logs will be stored in via the configuration file. 
+Currently, only postgres is supported. You can customize the table where the logs will be stored in via the configuration file. Log beard will create the configured table on startup if it doesnt already exist.
 
 The default config stores syslog fields to columns of the same name in a one-to-one fashion on a table named "LOGS".
 
@@ -95,5 +95,3 @@ You can customize the table name, the names of each column, or ignore some field
   }
 }
 ```
-
-
