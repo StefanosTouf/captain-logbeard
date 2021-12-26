@@ -135,6 +135,7 @@ We can tell the captain to extract each part of our logs and store them in their
   }
 }
 ```
-Here, we are extracting the `Event` with regural expressions from the message and placing it in its own column. Every `custom field` needs to be also configured and given a name on the `fields` map.
+Here, we are extracting the `Event` with regural expressions from the message and placing it in its own column. Then we are extracting the actual message in the same fashion. Every `custom field` needs to be also configured and given a name on the `fields` map. This is of course a very simple log format, but using regural expressions and as many custom fields as possible, along with the already existing syslog fields, im sure you can achieve nothing less than greatness.
 
+Currently, every `custom field` extracts its info from the `message` part of the syslog format. This is probably enough for most use cases. If not the captain shall revise his plans. 
 
