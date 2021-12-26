@@ -77,6 +77,7 @@ The default config stores syslog fields to columns of the same name in a one-to-
   }
 }
 ```
+*A useful breakdown of the syslog RFC 5424 format can be found in this article https://blog.datalust.co/seq-input-syslog/*
 
 ### Customized table and columns
 
