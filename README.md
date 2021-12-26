@@ -1,6 +1,6 @@
 # Captain logbeard "the great" arrives! 
 
-Captain logbeard is at your service to aggregate, process and forward your application logs at their destination. 
+Captain logbeard is at your service to aggregate, process and forward your application logs to their destination. 
 
 ## Meet the captain
 
@@ -100,12 +100,14 @@ You can customize the table name, the names of each column, or ignore some field
 }
 ```
 #### Complex customization
-A lot of information can be found in the actual message of each log that the syslog format cannot account for. 
+A lot of information can be found in the actual message of each log. This is something the syslog format alone cannot account for. 
 
 Lets say that all our apps follow the same log format:
 ```
 Event: message message message message message message message
 ```
+*this text will be found at the end of each syslog message, according to the rfc 5424 standard*
+
 We can tell the captain to extract each part of our logs and store them in their own columns using the optional `custom_fields` configuration option along with the normal `fields` configuration.
 
 ```json
@@ -137,5 +139,5 @@ We can tell the captain to extract each part of our logs and store them in their
 ```
 Here, we are extracting the `Event` with regural expressions from the message and placing it in its own column. Then we are extracting the actual message in the same fashion. Every `custom field` needs to be also configured and given a name on the `fields` map. This is of course a very simple log format, but using regural expressions and as many custom fields as possible, along with the already existing syslog fields, im sure you can achieve nothing less than greatness.
 
-Currently, every `custom field` extracts its info from the `message` part of the syslog format. This is probably enough for most use cases. If not the captain shall revise his plans. 
+Currently, every `custom field` extracts its info exclusively from the `message` part of the syslog standard. This is probably enough for most use cases. If not, the captain shall revise his plans. 
 
