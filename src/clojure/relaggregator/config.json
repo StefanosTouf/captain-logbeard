@@ -18,7 +18,8 @@
       "process_id": "process_id",
       "message_id": "message_id",
       "structured_data": "structured_data",
-      "message": "message"
+      "actual_message": "actual_message",
+      "event": "event"
     }
   }
 }

@@ -47,31 +47,30 @@
   []
   (let [table-config  (conf/table-config)
         fields        (:fields table-config)
-        custom-fields (:custom_fields table-config)
-        columns-keys  (concat (keys fields) (keys custom-fields))
-        columns       (map name columns-keys)
-        field-val-ref (concat (map keyword (vals fields)) (keys custom-fields))
-        column-types  (map #(let [t (syslog-fields-to-types %)]
-                              (if t t "VARCHAR"))
-                           field-val-ref)]
-    [columns column-types columns-keys field-val-ref]))
+        columns-keys  (keys fields)
+        field-val-ref (map keyword (vals fields))]
+    [columns-keys field-val-ref]))
 
 
 (defn insert
   [inserts]
-  (let [[_ _ columns-keys] (custom-table-spec)]
+  (let [[columns-keys] (custom-table-spec)]
     (jdbc/insert-multi! conn (keyword (table-name)) columns-keys inserts)))
 
 
 (defn record-to-insert-columns
   [log-record]
-  (let [[_ _ _ field-val-ref] (custom-table-spec)]
+  (let [[_ field-val-ref] (custom-table-spec)]
     (map log-record field-val-ref)))
 
 
 (defn init-db
   []
-  (let [[columns column-types] (custom-table-spec)
+  (let [[column-keys field-val-ref] (custom-table-spec)
+        column-types  (map #(let [t (syslog-fields-to-types %)]
+                              (if t t "VARCHAR"))
+                           field-val-ref)
+        columns        (map name column-keys)
         create-table   (str "create table if not exists " (table-name) " ( "
                             (->> (interleave columns column-types)
                                  (partition 2)
