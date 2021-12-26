@@ -11,7 +11,6 @@ Logbeard is a simple man, living a simple life, and he is proud of it! He consis
 docker run -it \
   --name logbeard \
   --rm \
-  --network mock-net \
   -v ${PWD}/config.json:/opt/logbeard/config.json \
   -e PORT=5000 \
   -e DB_PORT=5432 \
