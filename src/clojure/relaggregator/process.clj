@@ -54,13 +54,15 @@
   [syslog-record]
   (let [custom-fields (:custom_fields
                         (conf/table-config))]
-    (->>
-      (map (fn [[k v]]
-             (let [message (syslog-record :message)
-                   regex (re-pattern (:regex v))
-                   result (re-find regex message)]
-               [k (if (seq? result) (first result) result)])) custom-fields)
-      (reduce conj syslog-record))))
+    (if custom-fields
+      (->>
+        (map (fn [[k v]]
+               (let [message (syslog-record :message)
+                     regex (re-pattern (:regex v))
+                     result (re-find regex message)]
+                 [k (if (seq? result) (first result) result)])) custom-fields)
+        (reduce conj syslog-record))
+      syslog-record)))
 
 
 (defn metrics-processor

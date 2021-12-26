@@ -78,7 +78,10 @@ The default config stores syslog fields to columns of the same name in a one-to-
 }
 ```
 
-You can customize the table name, the names of each column, or ignore some fields all together. Each entry of the fields map represents the name of the column you wish to use (the key) along with the syslog field you want stored in it (the value).
+### Customised table and columns
+
+##### Simple configuration
+You can customize the table name, the names of each column, or ignore some fields all together, the captain wont ask any questions, he trusts your judgement. Each entry of the fields map represents the name of the column you wish to use (the key) along with the syslog field you want stored in it (the value).
 
 *sample custom config file:*
 ```json
@@ -95,3 +98,42 @@ You can customize the table name, the names of each column, or ignore some field
   }
 }
 ```
+##### Complex configuration
+A lot of information can be found in the actual message of each log that the syslog format cannot account for. 
+
+Lets say that all our apps follow the same log format:
+```
+Event: message
+```
+We can tell the captain to extract each part of our logs and store them in their own columns using the optional `custom_fields` configuration option along with the normal `fields` configuration.
+
+```json
+{
+  "table":{ 
+    "name":"LOGS",
+    "custom_fields":{
+      "event": {
+        "regex": "^[^:]+"
+      },
+      "actual_msg": {
+        "regex": "[^:]+$"
+      }
+    },
+    "fields":{
+      "priority":"priority",
+      "version": "version",
+      "timestamp":"timestamp",
+      "hostname": "hostname",
+      "app_name": "app_name",
+      "process_id": "process_id",
+      "message_id": "message_id",
+      "structured_data": "structured_data",
+      "actual_message": "actual_msg",
+      "event": "event"
+    }
+  }
+}
+```
+Here, we are extracting the `Event` with regural expressions from the message and placing it in its own column. Every `custom field` needs to be also configured and given a name on the `fields` map.
+
+
