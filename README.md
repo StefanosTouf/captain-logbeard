@@ -104,7 +104,7 @@ A lot of information can be found in the actual message of each log that the sys
 
 Lets say that all our apps follow the same log format:
 ```
-Event: message
+Event: message message message message message message message
 ```
 We can tell the captain to extract each part of our logs and store them in their own columns using the optional `custom_fields` configuration option along with the normal `fields` configuration.
 
