@@ -78,9 +78,9 @@ The default config stores syslog fields to columns of the same name in a one-to-
 }
 ```
 
-### Customised table and columns
+### Customized table and columns
 
-##### Simple configuration
+##### Simple customization
 You can customize the table name, the names of each column, or ignore some fields all together, the captain wont ask any questions, he trusts your judgement. Each entry of the fields map represents the name of the column you wish to use (the key) along with the syslog field you want stored in it (the value).
 
 *sample custom config file:*
@@ -98,7 +98,7 @@ You can customize the table name, the names of each column, or ignore some field
   }
 }
 ```
-##### Complex configuration
+##### Complex customization
 A lot of information can be found in the actual message of each log that the syslog format cannot account for. 
 
 Lets say that all our apps follow the same log format:
