@@ -11,7 +11,6 @@ Logbeard is a simple man, living a simple life, and he is proud of it! He consis
 docker run -it \
   --name logbeard \
   --rm \
-  --network mock-net \
   -v ${PWD}/config.json:/opt/logbeard/config.json \
   -e PORT=5000 \
   -e DB_PORT=5432 \
@@ -26,7 +25,7 @@ docker run -it \
 ```
 PORT=5000 //what port logbeard exposes a tcp socket on
 NULL_RETRIES=20 //how many times logbeard will accept failing to read a log before restarting and waiting for a new client
-LOGS_PER_WRITE=100 //how many writes to the database will happen at a time
+LOGS_PER_WRITE=50 //how many writes to the database will happen at a time
 DB_PORT=5432 //what port to search for the database
 DB_NAME=postgres
 DB_USER=postgres
@@ -55,7 +54,7 @@ docker run --name logspout -t --network mock-net --rm --env DEBUG=1 \
 * ToDo
 
 ## Outputs
-Currently, only postgres is supported. You can customize the table that the logs will be stored via the configuration file. 
+Currently, only postgres is supported. You can customize the table where the logs will be stored in via the configuration file. Log beard will create the configured table on startup if it doesnt already exist.
 
 The default config stores syslog fields to columns of the same name in a one-to-one fashion on a table named "LOGS".
 
@@ -88,7 +87,7 @@ You can customize the table name, the names of each column, or ignore some field
     "name":"BETTER_TABLE_NAME",
     "fields":{
       "priority":"priority",
-      "timestamp":"timestamp",
+      "time":"timestamp",
       "hostname": "hostname",
       "mid": "message_id",
       "message": "message"
@@ -96,5 +95,3 @@ You can customize the table name, the names of each column, or ignore some field
   }
 }
 ```
-
-
