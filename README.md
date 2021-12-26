@@ -25,7 +25,7 @@ docker run -it \
 ```
 PORT=5000 //what port logbeard exposes a tcp socket on
 NULL_RETRIES=20 //how many times logbeard will accept failing to read a log before restarting and waiting for a new client
-LOGS_PER_WRITE=100 //how many writes to the database will happen at a time
+LOGS_PER_WRITE=50 //how many writes to the database will happen at a time
 DB_PORT=5432 //what port to search for the database
 DB_NAME=postgres
 DB_USER=postgres
