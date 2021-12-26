@@ -1,0 +1,16 @@
+{
+  "table":{ 
+    "name":"LOGS",
+    "fields":{
+      "priority":"priority",
+      "version": "version",
+      "timestamp":"timestamp",
+      "hostname": "hostname",
+      "app_name": "app_name",
+      "process_id": "process_id",
+      "message_id": "message_id",
+      "structured_data": "structured_data",
+      "message": "message"
+    }
+  }
+}

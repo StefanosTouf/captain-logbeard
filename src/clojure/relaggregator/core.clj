@@ -5,8 +5,8 @@
      :as a
      :refer [>! <! go chan pipeline >!! <!! buffer]]
     [relaggregator.config :as conf]
-    [relaggregator.process :as p]
-    [relaggregator.database :as db])
+    [relaggregator.database :as db]
+    [relaggregator.process :as p])
   (:import
     (relaggregator.LogServer
       LogServer)))
@@ -27,7 +27,10 @@
                              (>!! main-ch :process/shutdown)
                              (.close logserver)
                              (apply -main _args))
-        msg              (do (go (->> msg p/syslog-to-record (>! main-ch)))
+        msg              (do (go (->> msg
+                                      p/syslog-to-record
+                                      db/record-to-insert-columns
+                                      (>! main-ch)))
                              (go (->> msg p/syslog-to-record (>! metrics-ch)))
                              (recur (.readLine reader) 0))
         :else            (recur (.readLine reader) (+ nils 1))))))

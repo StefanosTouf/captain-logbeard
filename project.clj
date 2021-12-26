@@ -11,6 +11,6 @@
                  [org.clojure/core.async "1.5.648"]
                  [org.postgresql/postgresql "42.3.1"]
                  [org.clojure/java.jdbc "0.7.12"]
+                 [org.clojure/data.json "2.4.0"]
                  [clojure.jdbc/clojure.jdbc-c3p0 "0.3.1"]]
-  :javac-options ["-target" "17" "-source" "17"]
-  :repl-options {:init-ns relaggregator.core})
+  :javac-options ["-target" "17" "-source" "17"])

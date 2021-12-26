@@ -5,8 +5,7 @@
      :refer [>! <! go chan pipeline >!! <!! buffer]]
     [clojure.string :as s]
     [relaggregator.config :as conf]
-    [relaggregator.database :as db]
-    )
+    [relaggregator.database :as db])
   (:import
     (java.sql
       Timestamp)
@@ -40,15 +39,15 @@
      [pri v] (rest (s/split pri-v #"<|>"))
      [str-d-bracket msg] (s/split sd-msg #"- |] " 2)
      str-d (s/replace str-d-bracket #"^\[|]$" "")]
-    [(type-parser read-string pri)
-     (type-parser read-string v)
-     (type-parser parse-timestamp ts)
-     (type-parser id  hn)
-     (type-parser id an)
-     (type-parser read-string pid)
-     (type-parser id msgid)
-     (type-parser id str-d)
-     (type-parser id msg)]))
+    {:priority        (type-parser read-string pri)
+     :version         (type-parser read-string v)
+     :timestamp       (type-parser parse-timestamp ts)
+     :hostname        (type-parser id  hn)
+     :app_name        (type-parser id an)
+     :process_id      (type-parser read-string pid)
+     :message_id      (type-parser id msgid)
+     :structured_data (type-parser id str-d)
+     :message         (type-parser id msg)}))
 
 
 (defn metrics-processor
