@@ -50,6 +50,19 @@
      :message         (type-parser id msg)}))
 
 
+(defn custom-field-gen
+  [syslog-record]
+  (let [custom-fields (:custom_fields
+                        (conf/table-config))]
+    (->>
+      (map (fn [[k v]]
+             (let [message (syslog-record :message)
+                   regex (re-pattern (:regex v))
+                   result (re-find regex message)]
+               [k (if (seq? result) (first result) result)])) custom-fields)
+      (reduce conj syslog-record))))
+
+
 (defn metrics-processor
   []
   (let [in (chan (buffer 1))]

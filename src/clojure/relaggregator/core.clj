@@ -29,6 +29,7 @@
                              (apply -main _args))
         msg              (do (go (->> msg
                                       p/syslog-to-record
+                                      p/custom-field-gen
                                       db/record-to-insert-columns
                                       (>! main-ch)))
                              (go (->> msg p/syslog-to-record (>! metrics-ch)))

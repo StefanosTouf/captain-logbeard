@@ -45,12 +45,16 @@
 
 (defn custom-table-spec
   []
-  (let [fields        (:fields (conf/table-config))
-        columns-keys  (keys fields)
+  (let [table-config  (conf/table-config)
+        fields        (:fields table-config)
+        custom-fields (:custom_fields table-config)
+        columns-keys  (concat (keys fields) (keys custom-fields))
         columns       (map name columns-keys)
-        syslog-fields (map keyword (vals fields))
-        column-types  (map syslog-fields-to-types syslog-fields)]
-    [columns column-types columns-keys syslog-fields]))
+        field-val-ref (concat (map keyword (vals fields)) (keys custom-fields))
+        column-types  (map #(let [t (syslog-fields-to-types %)]
+                              (if t t "VARCHAR"))
+                           field-val-ref)]
+    [columns column-types columns-keys field-val-ref]))
 
 
 (defn insert
@@ -61,8 +65,8 @@
 
 (defn record-to-insert-columns
   [log-record]
-  (let [[_ _ _ syslog-fields] (custom-table-spec)]
-    (map log-record syslog-fields)))
+  (let [[_ _ _ field-val-ref] (custom-table-spec)]
+    (map log-record field-val-ref)))
 
 
 (defn init-db
@@ -74,4 +78,5 @@
                                  (map #(str (first %) " " (second %)))
                                  (s/join ", ")) " );")]
     (jdbc/db-do-commands conn [create-table])))
+
 

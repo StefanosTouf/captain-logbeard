@@ -1,6 +1,14 @@
 {
   "table":{ 
     "name":"LOGS",
+    "custom_fields":{
+      "event": {
+        "regex": "^[^:]+"
+      },
+      "actual_message": {
+        "regex": "[^:]+$"
+      }
+    },
     "fields":{
       "priority":"priority",
       "version": "version",
