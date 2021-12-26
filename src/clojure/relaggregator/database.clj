@@ -43,7 +43,7 @@
    :message "VARCHAR"})
 
 
-(defn idkyet
+(defn custom-table-spec
   []
   (let [fields        (:fields (conf/table-config))
         columns-keys  (keys fields)
@@ -55,19 +55,19 @@
 
 (defn insert
   [inserts]
-  (let [[_ _ columns-keys] (idkyet)]
+  (let [[_ _ columns-keys] (custom-table-spec)]
     (jdbc/insert-multi! conn (keyword (table-name)) columns-keys inserts)))
 
 
 (defn record-to-insert-columns
   [log-record]
-  (let [[_ _ _ syslog-fields] (idkyet)]
+  (let [[_ _ _ syslog-fields] (custom-table-spec)]
     (map log-record syslog-fields)))
 
 
 (defn init-db
   []
-  (let [[columns column-types] (idkyet)
+  (let [[columns column-types] (custom-table-spec)
         create-table   (str "create table if not exists " (table-name) " ( "
                             (->> (interleave columns column-types)
                                  (partition 2)

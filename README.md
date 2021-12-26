@@ -12,29 +12,27 @@ docker run -it \
   --name logbeard \
   --rm \
   --network mock-net \
+  -v ${PWD}/config.json:/opt/logbeard/config.json \
   -e PORT=5000 \
-  -e NULL_RETRIES=20 \
-  -e LOGS_PER_WRITE=100 \
   -e DB_PORT=5432 \
-  -e DB_TABLE_NAME=logs \
   -e DB_NAME=postgres \
   -e DB_USER=postgres \
   -e DB_PASSWORD=postgres \
-  -e DB_HOST=postgres \
+  -e DB_HOST=postgres
   logbeard
 ```
 
-## Environment Variables
+## Environment variables with their default values
 ```
 PORT=5000 //what port logbeard exposes a tcp socket on
 NULL_RETRIES=20 //how many times logbeard will accept failing to read a log before restarting and waiting for a new client
 LOGS_PER_WRITE=100 //how many writes to the database will happen at a time
 DB_PORT=5432 //what port to search for the database
-DB_TABLE_NAME=logs //where to store the logs
 DB_NAME=postgres
 DB_USER=postgres
 DB_PASSWORD=postgres
 DB_HOST=postgres
+CONFIG_PATH=/opt/logbeard/config.json //location inside of container where the configuration file is
 ```
 
 ## Inputs
@@ -57,18 +55,46 @@ docker run --name logspout -t --network mock-net --rm --env DEBUG=1 \
 * ToDo
 
 ## Outputs
-Currently, only postgres is supported and no customization of the table is provided (other than the name). The logs will be stored in a table thats a one-to-one mapping of the syslog rfc5424 format's fields
+Currently, only postgres is supported. You can customize the table that the logs will be stored via the configuration file. 
 
-```sql
-  create table logs(
-    priority        integer,
-    version         integer,
-    timestamp       timestamp,
-    hostname        varchar,
-    app_name        varchar,
-    process_id      integer,
-    message_id      varchar,
-    structured_data varchar,
-    message         varchar);
+The default config stores syslog fields to columns of the same name in a one-to-one fashion on a table named "LOGS".
+
+*default config file:*
+```json
+{
+  "table":{ 
+    "name":"LOGS",
+    "fields":{
+      "priority":"priority",
+      "version": "version",
+      "timestamp":"timestamp",
+      "hostname": "hostname",
+      "app_name": "app_name",
+      "process_id": "process_id",
+      "message_id": "message_id",
+      "structured_data": "structured_data",
+      "message": "message"
+    }
+  }
+}
 ```
+
+You can customize the table name, the names of each column, or ignore some fields all together. Each entry of the fields map represents the name of the column you wish to use (the key) along with the syslog field you want stored in it (the value).
+
+*sample custom config file:*
+```json
+{
+  "table":{ 
+    "name":"BETTER_TABLE_NAME",
+    "fields":{
+      "priority":"priority",
+      "timestamp":"timestamp",
+      "hostname": "hostname",
+      "mid": "message_id",
+      "message": "message"
+    }
+  }
+}
+```
+
 
