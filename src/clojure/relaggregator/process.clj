@@ -51,9 +51,8 @@
 
 
 (defn custom-field-gen
-  [syslog-record]
-  (let [custom-fields (:custom_fields
-                        (conf/table-config))]
+  [{custom-fields :custom_fields} syslog-record]
+  (let [custom-fields custom-fields]
     (if custom-fields
       (->>
         (map (fn [[k v]]
@@ -73,13 +72,19 @@
 
 
 (defn printer
-  []
-  (let [buff-size (conf/config :logs-per-write)
-        in        (chan (buffer buff-size))]
+  [{buff-size :logs-per-write
+    :as config} conn]
+  (let [in (chan (buffer buff-size))]
     (go
       (loop [inserts []]
         (let [incoming (<! in)]
-          (if (or (= incoming :process/shutdown) (= buff-size (count inserts)))
-            (do (db/insert inserts) (recur [incoming]))
-            (recur  (conj inserts incoming))))))
+          (if
+            (or
+              (= incoming :process/shutdown)
+              (= buff-size (count inserts)))
+            (do
+              (db/insert config conn inserts)
+              (recur [incoming]))
+            (recur
+              (conj inserts incoming))))))
     in))
