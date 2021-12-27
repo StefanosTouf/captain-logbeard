@@ -18,13 +18,13 @@
         out (p/printer config conn)
         record-to-insert #(db/record-to-insert-columns
                             config %)
-        custom-field     #(p/custom-field-gen
+        custom-field #(p/custom-field-gen
                             config %)
         process (comp
                   (map p/syslog-to-record)
                   (map custom-field)
                   (map record-to-insert))]
-    (pipeline 3 out process in)
+    (pipeline 4 out process in)
     in))
 
 
@@ -33,7 +33,7 @@
   (let [in (chan)
         out (p/metrics-processor)
         process (map p/syslog-to-record)]
-    (pipeline 3 out process in)
+    (pipeline 2 out process in)
     in))
 
 
