@@ -2,8 +2,7 @@
   (:require
     [clojure.java.jdbc :as jdbc]
     [clojure.string :as s]
-    [jdbc.pool.c3p0 :as pool]
-    [relaggregator.config :as conf]))
+    [jdbc.pool.c3p0 :as pool]))
 
 
 (defn db-spec

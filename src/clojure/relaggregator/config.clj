@@ -40,13 +40,12 @@
                               \"priority\":\"priority\",
                               \"version\": \"version\",
                               \"timestamp\":\"timestamp\",
-                              \"hostname\": \"hostname\",
-                              \"app_name\": \"app_name\",
+                              \"container_name\": \"hostname\",
                               \"structured_data\": \"structured_data\",
                               \"event\": \"event\",
                               \"actual_message\": \"ac_message\"
-                            }
-                            }
+                          }
+                          }
                           }")))
 
 

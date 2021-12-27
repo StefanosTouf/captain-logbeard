@@ -2,9 +2,8 @@
   (:require
     [clojure.core.async
      :as a
-     :refer [>! <! go chan pipeline >!! <!! buffer]]
+     :refer [>! <! go chan pipeline >!! <!! buffer go-loop]]
     [clojure.string :as s]
-    [relaggregator.config :as conf]
     [relaggregator.database :as db])
   (:import
     (java.sql
@@ -66,7 +65,7 @@
 
 (defn metrics-processor
   []
-  (let [in (chan (buffer 1))]
+  (let [in (chan)]
     (go (while true (str (<! in) "--metrics")))
     in))
 
@@ -75,16 +74,15 @@
   [{buff-size :logs-per-write
     :as config} conn]
   (let [in (chan (buffer buff-size))]
-    (go
-      (loop [inserts []]
-        (let [incoming (<! in)]
-          (if
-            (or
-              (= incoming :process/shutdown)
-              (= buff-size (count inserts)))
-            (do
-              (db/insert config conn inserts)
-              (recur [incoming]))
-            (recur
-              (conj inserts incoming))))))
+    (go-loop [inserts []]
+      (let [incoming (<! in)]
+        (if
+          (or
+            (= incoming :process/shutdown)
+            (= buff-size (count inserts)))
+          (do
+            (db/insert config conn inserts)
+            (recur [incoming]))
+          (recur
+            (conj inserts incoming)))))
     in))
