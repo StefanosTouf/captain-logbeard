@@ -37,8 +37,7 @@
 
 (def filters
   {:filters
-   {:priority
-    {:or {:gt 1000 :eq 1000}}}})
+   {:event { :one_of ["13" 123 165]}}})
 
 
 (def operators
@@ -74,8 +73,10 @@
     (fn [[field-name predicate-map]]
       (let [[op-k] (keys predicate-map)
             [v]    (vals predicate-map)
+            v-set  (if (#{:one_of :not_one_of} op-k) 
+                     (set v) v)
             op     (operators op-k)]
-        [field-name #(op v %)]))
+        [field-name #(op v-set %)]))
     filters))
 
 
