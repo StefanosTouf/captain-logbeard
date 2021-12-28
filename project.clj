@@ -5,7 +5,7 @@
             :url "https://www.eclipse.org/legal/epl-2.0/"}
   :source-paths ["src/clojure"]
   :main relaggregator.core
-  :aot :all
+  ; :aot :all
   :java-source-paths ["src/java"]
   :dependencies [[org.clojure/clojure "1.10.0"] 
                  [org.clojure/core.async "1.5.648"]

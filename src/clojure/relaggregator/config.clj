@@ -30,12 +30,9 @@
                             \"name\":\"LOGS\",
                             \"custom_fields\":{
                               \"event\": {
-                                  \"regex\": \"^[^:]+\"
-                              },
+                                  \"regex\": \"^[^:]+\"},
                                \"ac_message\": {
-                                  \"regex\": \"[^:]+$\"
-                              }
-                            },
+                                  \"regex\": \"[^:]+$\"}},
                             \"fields\":{
                               \"priority\":\"priority\",
                               \"version\": \"version\",
@@ -43,10 +40,7 @@
                               \"container_name\": \"hostname\",
                               \"structured_data\": \"structured_data\",
                               \"event\": \"event\",
-                              \"actual_message\": \"ac_message\"
-                          }
-                          }
-                          }")))
+                              \"actual_message\": \"ac_message\"}}}")))
 
 
 (defn custom-table-spec
