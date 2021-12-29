@@ -30,9 +30,15 @@
                             \"name\":\"LOGS\",
                             \"custom_fields\":{
                               \"event\": {
-                                  \"regex\": \"^[^:]+\"},
+                                  \"regex\": \"^[^:]+\",
+                                  \"type\": \"varchar\"},
                                \"ac_message\": {
-                                  \"regex\": \"[^:]+$\"}},
+                                  \"regex\": \"[^:]+$\",
+                                  \"type\": \"varchar\"},
+                               \"message_aa\": {
+                                  \"regex\": \"[^ ]+$\",
+                                  \"type\": \"int\"}
+                              },
                             \"fields\":{
                               \"priority\":\"priority\",
                               \"version\": \"version\",
@@ -40,17 +46,20 @@
                               \"container_name\": \"hostname\",
                               \"structured_data\": \"structured_data\",
                               \"event\": \"event\",
-                              \"actual_message\": \"ac_message\"}}}")))
+                              \"actual_message\": \"ac_message\",
+                              \"message_aa\": \"message_aa\"}}}")))
 
 
 (defn custom-table-spec
   []
-  (let [table-config  (table-config)
-        fields        (:fields table-config)
-        column-keys   (keys fields)
-        field-val-ref (map keyword (vals fields))]
+  (let [table-config       (table-config)
+        fields             (:fields table-config)
+        custom-fields (:custom_fields table-config)
+        column-keys        (keys fields)
+        field-val-ref      (map keyword (vals fields))]
     {:column-keys column-keys
-     :field-val-ref field-val-ref}))
+     :field-val-ref field-val-ref
+     :custom-fields custom-fields}))
 
 
 (defn config

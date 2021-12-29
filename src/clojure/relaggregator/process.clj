@@ -17,19 +17,24 @@
 
 (defn type-parser
   [parser value]
-  (if (or (= value "") (= value "-")) nil (parser value)))
-
+  (if (or (= value "") (= value "-")) nil 
+    (try (parser value) 
+         (catch Exception _ nil))))
 
 (defn id
   [v]
   v)
-
 
 (defn parse-timestamp
   [^String v]
   (Timestamp/from
     (Instant/parse v)))
 
+(defn parse-number
+  "Reads a number from a string. Returns nil if not a number."
+  [s]
+  (when (re-find #"^-?\d+\.?\d*$" s)
+    (read-string s)))
 
 (defn syslog-to-record
   [log]
@@ -38,27 +43,34 @@
      [pri v] (rest (s/split pri-v #"<|>"))
      [str-d-bracket msg] (s/split sd-msg #"- |] " 2)
      str-d (s/replace str-d-bracket #"^\[|]$" "")]
-    {:priority        (type-parser read-string pri)
-     :version         (type-parser read-string v)
+    {:priority        (type-parser parse-number pri)
+     :version         (type-parser parse-number v)
      :timestamp       (type-parser parse-timestamp ts)
      :hostname        (type-parser id  hn)
      :app_name        (type-parser id an)
-     :process_id      (type-parser read-string pid)
+     :process_id      (type-parser parse-number pid)
      :message_id      (type-parser id msgid)
      :structured_data (type-parser id str-d)
      :message         (type-parser id msg)}))
 
+(def custom-field-type-parsers
+  {"int"       parse-number
+   "real"      parse-number
+   "varchar"   id               
+   "timestamp" parse-timestamp})
 
 (defn custom-field-gen
   [{custom-fields :custom_fields} syslog-record]
   (let [custom-fields custom-fields]
     (if custom-fields
       (->>
-        (map (fn [[k v]]
+        (map (fn [[k {:keys [regex type]}]]
                (let [message (syslog-record :message)
-                     regex (re-pattern (:regex v))
-                     result (re-find regex message)]
-                 [k (if (seq? result) (first result) result)])) custom-fields)
+                     regex   (re-pattern regex)
+                     found   (re-find regex message)
+                     match   (if (seq? found) (first found) found)
+                     result  (type-parser (custom-field-type-parsers type) match)]
+                 [k result])) custom-fields)
         (reduce conj syslog-record))
       syslog-record)))
 

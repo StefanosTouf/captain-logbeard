@@ -36,11 +36,6 @@
     (pipeline 2 out process in)
     in))
 
-
-(let [{p :dbport} (conf/config)]
-  p)
-
-
 (defn -main
   [& _args]
   (let [{retries :null-retries

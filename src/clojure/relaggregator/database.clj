@@ -42,6 +42,7 @@
 (defn insert
   [{cks :column-keys
     n :name} conn inserts]
+  (println inserts)
   (jdbc/insert-multi!
     conn (keyword n) cks inserts))
 
@@ -54,9 +55,10 @@
 (defn init-db
   [{field-val-ref :field-val-ref
     column-keys   :column-keys
-    table-name    :name} conn]
+    table-name    :name
+    custom-fields :custom-fields} conn]
   (let [column-types  (map #(let [t (syslog-fields-to-types %)]
-                              (if t t "VARCHAR"))
+                              (if t t (:type (custom-fields %))))
                            field-val-ref)
         columns        (map name column-keys)
         create-table   (str "create table if not exists " table-name " ( "
@@ -65,5 +67,4 @@
                                  (map #(str (first %) " " (second %)))
                                  (s/join ", ")) " );")]
     (jdbc/db-do-commands conn [create-table])))
-
 

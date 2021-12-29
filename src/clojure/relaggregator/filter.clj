@@ -41,30 +41,16 @@
 
 
 (def operators
-  {:eq (fn [filter-val log-val]
-         (if (number? filter-val)
-           (= filter-val (read-string log-val))
-           (= filter-val log-val)))
-   :not_eq (fn [filter-val log-val]
-             (not (if (number? filter-val)
-                    (= filter-val (read-string log-val))
-                    (= filter-val log-val))))
+  {:eq =
+   :not_eq #(not (= %))
    ;; gt and lt make more sense as their opposites 
    ;; when considering how the filters are written
-   :gte (fn [filter-val log-val]
-          (let [log-v (if (string? log-val) (read-string log-val) log-val)]
-            (<= filter-val log-v)))
-   :lte (fn [filter-val log-val]
-          (let [log-v (if (string? log-val) (read-string log-val) log-val)]
-            (>= filter-val log-v)))
-   :gt (fn [filter-val log-val]
-         (let [log-v (if (string? log-val) (read-string log-val) log-val)]
-           (< filter-val log-v)))
-   :lt (fn [filter-val log-val]
-         (let [log-v (if (string? log-val) (read-string log-val) log-val)]
-           (> filter-val log-v)))
-   :one_of (fn [filter-set log-val] (boolean (filter-set log-val)))
-   :not_one_of (fn [filter-set log-val] (not (boolean (filter-set log-val))))})
+   :gte <= 
+   :lte >=
+   :gt <
+   :lt >
+   :one_of #(boolean (%1 %2))
+   :not_one_of #(not (boolean (%1 %2)))})
 
 
 (defn filters-to-pred-vec
@@ -90,7 +76,7 @@
 
 
 (def sample-log
-  "<165>1 2003-10-11T22:14:15.003Z mymachine.example.com evntslog - ID47 [exampleSDID@32473 iut=\"3\" eventSource=\"Application\" eventID=\"1011\"] 13: application event log entry...")
+  "<165>1 2003-10-11T22:14:15.003Z mymachine.example.com evntslog 12312 ID47 [exampleSDID@32473 iut=\"3\" eventSource=\"Application\" eventID=\"1011\"] Error: application event log entry -- 1000")
 
 
 (should-pass? (filters-to-pred-vec filters) (to-db-pipeline sample-log))
