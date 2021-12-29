@@ -41,8 +41,7 @@
 
 (defn insert
   [{cks :column-keys
-    n :name} conn inserts]
-  (println inserts)
+    n :table-name} conn inserts]
   (jdbc/insert-multi!
     conn (keyword n) cks inserts))
 
@@ -55,7 +54,7 @@
 (defn init-db
   [{field-val-ref :field-val-ref
     column-keys   :column-keys
-    table-name    :name
+    table-name    :table-name
     custom-fields :custom-fields} conn]
   (let [column-types  (map #(let [t (syslog-fields-to-types %)]
                               (if t t (:type (custom-fields %))))

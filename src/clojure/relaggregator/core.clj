@@ -6,7 +6,8 @@
      :refer [>! <! go chan pipeline >!! <!! buffer]]
     [relaggregator.config :as conf]
     [relaggregator.database :as db]
-    [relaggregator.process :as p])
+    [relaggregator.process :as p]
+    [relaggregator.filter :as f])
   (:import
     (relaggregator.LogServer
       LogServer)))
@@ -20,9 +21,12 @@
                             config %)
         custom-field #(p/custom-field-gen
                             config %)
+        pred-vec     (f/get-pred-vec config)
+        should-pass? #(f/should-pass? pred-vec %) 
         process (comp
                   (map p/syslog-to-record)
                   (map custom-field)
+                  (filter should-pass?)
                   (map record-to-insert))]
     (pipeline 4 out process in)
     in))

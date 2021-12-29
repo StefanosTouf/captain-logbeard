@@ -4,7 +4,8 @@
      :as a
      :refer [>! <! go chan pipeline >!! <!! buffer go-loop]]
     [clojure.string :as s]
-    [relaggregator.database :as db])
+    [relaggregator.database :as db]
+    [relaggregator.macros :as m])
   (:import
     (java.sql
       Timestamp)
@@ -17,24 +18,28 @@
 
 (defn type-parser
   [parser value]
-  (if (or (= value "") (= value "-")) nil 
-    (try (parser value) 
-         (catch Exception _ nil))))
+  (if (or (= value "") (= value "-"))
+    nil
+    (m/attempt (parser value) nil)))
+
 
 (defn id
   [v]
   v)
+
 
 (defn parse-timestamp
   [^String v]
   (Timestamp/from
     (Instant/parse v)))
 
+
 (defn parse-number
   "Reads a number from a string. Returns nil if not a number."
   [s]
   (when (re-find #"^-?\d+\.?\d*$" s)
     (read-string s)))
+
 
 (defn syslog-to-record
   [log]
@@ -53,11 +58,13 @@
      :structured_data (type-parser id str-d)
      :message         (type-parser id msg)}))
 
+
 (def custom-field-type-parsers
   {"int"       parse-number
    "real"      parse-number
-   "varchar"   id               
+   "varchar"   id
    "timestamp" parse-timestamp})
+
 
 (defn custom-field-gen
   [{custom-fields :custom_fields} syslog-record]
@@ -79,6 +86,13 @@
   []
   (let [in (chan)]
     (go (while true (str (<! in) "--metrics")))
+    in))
+
+
+(defn printer2
+  []
+  (let [in (chan)]
+    (go (while true (println (<! in))))
     in))
 
 
