@@ -11,4 +11,4 @@
 (defmacro go-inf
   "Shorthand for go while true do"
   [& fs]
-  `(go (while true (do ~@fs))))
+  `(clojure.core.async/go (while true (do ~@fs))))
