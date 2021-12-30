@@ -4,8 +4,7 @@
      :as a
      :refer [>! <! go chan pipeline >!! <!! buffer go-loop]]
     [clojure.string :as s]
-    [relaggregator.database :as db]
-    [relaggregator.macros :as m])
+    [relaggregator.macros :refer [go-inf attempt]])
   (:import
     (java.sql
       Timestamp)
@@ -20,7 +19,7 @@
   [parser value]
   (if (or (= value "") (= value "-"))
     nil
-    (m/attempt (parser value) nil)))
+    (attempt (parser value) nil)))
 
 
 (defn id
@@ -85,7 +84,7 @@
 (defn metrics-processor
   []
   (let [in (chan)]
-    (go (while true (str (<! in) "--metrics")))
+    (go-inf (str (<! in) "--metrics"))
     in))
 
 (defn record-to-insert-columns

@@ -1,18 +1,6 @@
 (ns relaggregator.filter
   (:require
-    [relaggregator.config :as conf]
-    [relaggregator.macros :as m]
-    [relaggregator.process :as p]))
-
-
-(defn to-db-pipeline
-  [log]
-  (let [config        (conf/config)
-        custom-field #(p/custom-field-gen
-                        config %)]
-    (->> log
-         p/syslog-to-record
-         custom-field)))
+    [relaggregator.macros :as m]))
 
 
 (def operators
