@@ -42,10 +42,8 @@
                               },
                             \"fields\":{
                               \"priority\":\"priority\",
-                              \"version\": \"version\",
                               \"timestamp\":\"timestamp\",
-                              \"container_name\": \"hostname\",
-                              \"structured_data\": \"structured_data\",
+                              \"container_name\": \"app_name\",
                               \"event\": \"event\",
                               \"actual_message\": \"ac_message\",
                               \"message_aa\": \"message_aa\"},

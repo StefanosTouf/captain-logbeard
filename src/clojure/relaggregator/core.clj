@@ -41,28 +41,36 @@
     in))
 
 
+(defn start
+  [{:keys [null-retries] :as config} reader logserver conn
+   process-ch db-ch metrics-ch]
+  (loop [msg (.readLine reader) nils 0]
+    (cond
+      (> nils null-retries) (do (println "Too many nulls, restarting...")
+                                (>!! db-ch :relaggregator.database/send)
+                                (.close logserver)
+                                (start config reader 
+                                       logserver conn 
+                                       process-ch db-ch 
+                                       metrics-ch))
+      msg (do (go (>! process-ch msg))
+              (go (>! metrics-ch msg))
+              (recur (.readLine reader) 0))
+      :else (recur (.readLine reader)
+                   (+ nils 1)))))
+
+
 (defn -main
   [& _args]
-  (let [{retries :null-retries
-         port :port
+  (let [{:keys [port]
          :as config}  (conf/config)
         conn          (db/conn config)
-        [process-ch
-         to-db-ch]    (to-db-pipeline config conn)
-        to-metrics-ch (to-metrics-pipeline)
         _             (db/init-db config conn)
         logserver     (new LogServer port)
-        reader        (.getReader logserver)]
-    (loop [msg (.readLine reader) nils 0]
-      (cond
-        (> nils retries) (do (println "Too many nulls, restarting...")
-                             (>!! to-db-ch :relaggregator.database/send)
-                             (.close logserver)
-                             (apply -main _args))
-        msg (do (go (>! process-ch msg))
-                (go (>! to-metrics-ch msg))
-                (recur (.readLine reader) 0))
-        :else (recur (.readLine reader)
-                     (+ nils 1))))))
+        reader        (.getReader logserver)
+        [process-ch
+         db-ch]    (to-db-pipeline config conn)
+        metrics-ch (to-metrics-pipeline)]
+    (start config reader logserver conn process-ch db-ch metrics-ch)))
 
 

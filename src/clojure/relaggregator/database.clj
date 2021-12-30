@@ -9,25 +9,23 @@
 
 
 (defn db-spec
-  [{user :user pass :password host :host
-    dbp :dbport dbn :dbname}]
+  [{:keys [user password host dbport dbname]}]
   {:dbtype   "postgresql"
-   :dbname   dbn
+   :dbname   dbname
    :user     user
-   :password pass
+   :password password
    :host     host
-   :port     dbp})
+   :port     dbport})
 
 
 (defn conn
-  [{user :user pass :password host :host
-    dbp :dbport dbn :dbname}]
+  [{:keys [user password host dbport dbname]}]
   (pool/make-datasource-spec
     {:classname   "org.postgresql.Driver"
      :subprotocol "postgresql"
      :user        user
-     :password    pass
-     :subname     (str "//" host ":"  dbp "/"  dbn)}))
+     :password    password
+     :subname     (str "//" host ":"  dbport "/"  dbname)}))
 
 
 (def syslog-fields-to-types
@@ -43,17 +41,13 @@
 
 
 (defn insert
-  [{cks :column-keys
-    n :table-name} conn inserts]
+  [{:keys [column-keys table-name]} conn inserts]
   (jdbc/insert-multi!
-    conn (keyword n) cks inserts))
+    conn (keyword table-name) column-keys inserts))
 
 
 (defn init-db
-  [{field-val-ref :field-val-ref
-    column-keys   :column-keys
-    table-name    :table-name
-    custom-fields :custom-fields} conn]
+  [{:keys [field-val-ref column-keys table-name custom-fields]} conn]
   (let [column-types  (map #(let [t (syslog-fields-to-types %)]
                               (if t t (:type (custom-fields %))))
                            field-val-ref)
@@ -91,7 +85,9 @@
             (recur []))
 
           (= incoming ::send)
-          (recur [])
+          (do 
+            (println "No logs to insert")
+            (recur []))
 
           :else
           (recur (conj ins incoming)))))
