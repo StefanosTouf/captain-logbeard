@@ -74,9 +74,8 @@
 
 
 (defn to-db
-  [{buff-size :logs-per-write
-    :as config} conn]
-  (let [in (chan (buffer buff-size))]
+  [config conn]
+  (let [in (chan (buffer 50))]
     (go
       (while true
         (<! (timeout 2000))
