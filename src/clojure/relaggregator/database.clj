@@ -1,5 +1,8 @@
 (ns relaggregator.database
   (:require
+    [clojure.core.async
+     :as a
+     :refer [>! <! go chan pipeline >!! <!! buffer go-loop timeout]]
     [clojure.java.jdbc :as jdbc]
     [clojure.string :as s]
     [jdbc.pool.c3p0 :as pool]))
@@ -46,11 +49,6 @@
     conn (keyword n) cks inserts))
 
 
-(defn record-to-insert-columns
-  [{field-val-ref :field-val-ref} log-record]
-  (map log-record field-val-ref))
-
-
 (defn init-db
   [{field-val-ref :field-val-ref
     column-keys   :column-keys
@@ -66,4 +64,37 @@
                                  (map #(str (first %) " " (second %)))
                                  (s/join ", ")) " );")]
     (jdbc/db-do-commands conn [create-table])))
+
+
+;; (defn printer
+;;   []
+;;   (let [in (chan)]
+;;     (go (while true (println (<! in))))
+;;     in))
+
+
+(defn to-db
+  [{buff-size :logs-per-write
+    :as config} conn]
+  (let [in (chan (buffer buff-size))]
+    (go
+      (while true
+        (<! (timeout 2000))
+        (>! in ::send)))
+    (go-loop [ins []]
+      (let [incoming (<! in)
+            cnt-ins  (count ins)]
+        (cond
+          (and (> cnt-ins 0) (= incoming ::send))
+          (do
+            (println "Inserting: " cnt-ins " logs")
+            (insert config conn ins)
+            (recur []))
+
+          (= incoming ::send)
+          (recur [])
+
+          :else
+          (recur (conj ins incoming)))))
+    in))
 

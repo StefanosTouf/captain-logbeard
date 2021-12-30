@@ -3,11 +3,11 @@
   (:require
     [clojure.core.async
      :as a
-     :refer [>! <! go chan pipeline >!! <!! buffer]]
+     :refer [>! go chan pipeline >!!]]
     [relaggregator.config :as conf]
     [relaggregator.database :as db]
-    [relaggregator.process :as p]
-    [relaggregator.filter :as f])
+    [relaggregator.filter :as f]
+    [relaggregator.process :as p])
   (:import
     (relaggregator.LogServer
       LogServer)))
@@ -16,20 +16,20 @@
 (defn to-db-pipeline
   [config conn]
   (let [in  (chan)
-        out (p/printer config conn)
-        record-to-insert #(db/record-to-insert-columns
+        to-db (db/to-db config conn)
+        record-to-insert #(p/record-to-insert-columns
                             config %)
         custom-field #(p/custom-field-gen
-                            config %)
+                        config %)
         pred-vec     (f/get-pred-vec config)
-        should-pass? #(f/should-pass? pred-vec %) 
+        should-pass? #(f/should-pass? pred-vec %)
         process (comp
                   (map p/syslog-to-record)
                   (map custom-field)
                   (filter should-pass?)
                   (map record-to-insert))]
-    (pipeline 4 out process in)
-    in))
+    (pipeline 4 to-db process in)
+    [in to-db]))
 
 
 (defn to-metrics-pipeline
@@ -40,25 +40,26 @@
     (pipeline 2 out process in)
     in))
 
+
 (defn -main
   [& _args]
   (let [{retries :null-retries
          port :port
          :as config}  (conf/config)
         conn          (db/conn config)
-        to-db-ch      (to-db-pipeline config conn)
+        [process-ch
+         to-db-ch]    (to-db-pipeline config conn)
         to-metrics-ch (to-metrics-pipeline)
-        main-ch       (p/printer config conn)
         _             (db/init-db config conn)
         logserver     (new LogServer port)
         reader        (.getReader logserver)]
     (loop [msg (.readLine reader) nils 0]
       (cond
         (> nils retries) (do (println "Too many nulls, restarting...")
-                             (>!! main-ch :process/shutdown)
+                             (>!! to-db-ch :relaggregator.database/send)
                              (.close logserver)
                              (apply -main _args))
-        msg (do (go (>! to-db-ch msg))
+        msg (do (go (>! process-ch msg))
                 (go (>! to-metrics-ch msg))
                 (recur (.readLine reader) 0))
         :else (recur (.readLine reader)

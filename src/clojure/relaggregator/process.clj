@@ -88,27 +88,6 @@
     (go (while true (str (<! in) "--metrics")))
     in))
 
-
-(defn printer2
-  []
-  (let [in (chan)]
-    (go (while true (println (<! in))))
-    in))
-
-
-(defn printer
-  [{buff-size :logs-per-write
-    :as config} conn]
-  (let [in (chan (buffer buff-size))]
-    (go-loop [inserts []]
-      (let [incoming (<! in)]
-        (if
-          (or
-            (= incoming :process/shutdown)
-            (= buff-size (count inserts)))
-          (do
-            (db/insert config conn inserts)
-            (recur [incoming]))
-          (recur
-            (conj inserts incoming)))))
-    in))
+(defn record-to-insert-columns
+  [{field-val-ref :field-val-ref} log-record]
+  (map log-record field-val-ref))
