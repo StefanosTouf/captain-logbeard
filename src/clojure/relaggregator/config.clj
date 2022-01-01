@@ -33,25 +33,28 @@
                                \"ac_message\": {
                                   \"regex\": \"[^:]+$\",
                                   \"type\": \"varchar\"},
-                               \"message_aa\": {
+                               \"message_num\": {
                                   \"regex\": \"[^ ]+$\",
                                   \"type\": \"int\"},
                                \"last_digit\":{
                                   \"regex\": \"[0-9]$\",
                                   \"type\": \"int\"}
                               },
-                            \"fields\":{
+                           \"filters\": {
+                              \"event\": { 
+                                  \"one_of\": [\"Warning\", \"Info\"]},
+                              \"last_digit\": { 
+                                  \"gt\": 3 },
+                            \"columns\":{
                               \"priority\":\"priority\",
                               \"timestamp\":\"timestamp\",
                               \"container_name\": \"app_name\",
                               \"event\": \"event\",
                               \"actual_message\": \"ac_message\",
-                              \"message_aa\": \"message_aa\"},
-                           \"filters\": {
-                              \"event\": { 
-                                  \"one_of\": [\"Warning\", \"Info\"]},
-                              \"last_digit\": { 
-                                  \"gt\": 3 }}}"))
+                              \"message_number\": \"message_num\"}
+                  }
+                  }
+                  "))
 
 
 (defn custom-table-spec

@@ -3,7 +3,7 @@
   (:require
     [clojure.core.async
      :as a
-     :refer [>! go chan pipeline >!!]]
+     :refer [>!! go >! chan pipeline]]
     [relaggregator.config :as conf]
     [relaggregator.database :as db]
     [relaggregator.filter :as f]
@@ -15,7 +15,7 @@
 
 (defn to-db-pipeline
   [config conn]
-  (let [in  (chan)
+  (let [in  (chan 1)
         to-db (db/to-db config conn)
         record-to-insert #(p/record-to-insert-columns
                             config %)
@@ -32,30 +32,29 @@
     [in to-db]))
 
 
-(defn to-metrics-pipeline
-  []
-  (let [in (chan)
-        out (p/metrics-processor)
-        process (map p/syslog-to-record)]
-    (pipeline 2 out process in)
-    in))
+; (defn to-metrics-pipeline
+;   []
+;   (let [in (chan)
+;         out (p/metrics-processor)
+;         process (map p/syslog-to-record)]
+;     (pipeline 2 out process in)
+;     in))
 
 
 (defn start
-  [{:keys [null-retries] :as config} reader logserver conn
-   process-ch db-ch metrics-ch]
+  [{:keys [null-retries port] :as config} reader logserver conn
+   process-ch db-ch]
   (loop [msg (.readLine reader) nils 0]
     (cond
       (> nils null-retries) (do (println "Too many nulls, restarting...")
                                 (>!! db-ch :relaggregator.database/send)
                                 (.close logserver)
-                                (start config reader 
-                                       logserver conn 
-                                       process-ch db-ch 
-                                       metrics-ch))
-      msg (do (go (>! process-ch msg))
-              (go (>! metrics-ch msg))
-              (recur (.readLine reader) 0))
+                                (let [new-logserver (new LogServer port)
+                                      new-reader    (.getReader logserver)]
+                                  (start config new-reader
+                                         new-logserver conn
+                                         process-ch db-ch)))
+      msg (go (>! process-ch msg))
       :else (recur (.readLine reader)
                    (+ nils 1)))))
 
@@ -69,8 +68,7 @@
         logserver     (new LogServer port)
         reader        (.getReader logserver)
         [process-ch
-         db-ch]    (to-db-pipeline config conn)
-        metrics-ch (to-metrics-pipeline)]
-    (start config reader logserver conn process-ch db-ch metrics-ch)))
+         db-ch]    (to-db-pipeline config conn)]
+    (start config reader logserver conn process-ch db-ch)))
 
 

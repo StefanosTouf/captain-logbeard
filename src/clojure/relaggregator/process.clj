@@ -81,11 +81,11 @@
       syslog-record)))
 
 
-(defn metrics-processor
-  []
-  (let [in (chan)]
-    (go-inf (str (<! in) "--metrics"))
-    in))
+; (defn metrics-processor
+;   []
+;   (let [in (chan)]
+;     (go-inf (str (<! in) "--metrics"))
+;     in))
 
 (defn record-to-insert-columns
   [{field-val-ref :field-val-ref} log-record]

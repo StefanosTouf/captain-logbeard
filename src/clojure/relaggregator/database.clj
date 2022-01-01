@@ -4,6 +4,7 @@
      :as a
      :refer [>! <! go chan pipeline >!! <!! buffer go-loop timeout]]
     [clojure.java.jdbc :as jdbc]
+    [relaggregator.macros :refer [go-inf]]
     [clojure.string :as s]
     [jdbc.pool.c3p0 :as pool]))
 
@@ -70,10 +71,9 @@
 (defn to-db
   [config conn]
   (let [in (chan (buffer 50))]
-    (go
-      (while true
+    (go-inf
         (<! (timeout 2000))
-        (>! in ::send)))
+        (>! in ::send))
     (go-loop [ins []]
       (let [incoming (<! in)
             cnt-ins  (count ins)]
