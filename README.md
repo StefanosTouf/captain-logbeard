@@ -60,24 +60,24 @@ Using the optional `filters` configuration, logbeard can ignore any logs you don
   "priority": {
     "gt": 10
   },
-  "app_name": { 
-    "not_one_of": ["unwanted_app", "unwanted_app_2"]
+  "app-name": { 
+    "not-one-of": ["unwanted-app", "unwanted-app-2"]
   },
   "event": { 
-    "one_of": ["Warning", "Info"]
+    "one-of": ["Warning", "Info"]
   }
 ...
 ```
 
 Available operators:
 * **eq**: checks for equality between values of the same type
-* **not_eq**: checks for inequality between values of the same type
+* **not-eq**: checks for inequality between values of the same type
 * **gte**: greater or equal (used for numbers)
 * **lte**: lesser or equal (used for numbers)
 * **gt**: greater (used for numbers)
 * **lt**: lesser (used for numbers)
-* **one_of**: checks if the field value is one of the specified values (matches values of the same type)
-* **not_one_of**: checks if the field value is not one of the specified values (matches values of the same type)
+* **one-of**: checks if the field value is one of the specified values (matches values of the same type)
+* **not-one-of**: checks if the field value is not one of the specified values (matches values of the same type)
 
 
 ## Outputs
@@ -95,10 +95,10 @@ The default config stores syslog fields to columns of the same name in a one-to-
     "version": "version",
     "timestamp":"timestamp",
     "hostname": "hostname",
-    "app_name": "app_name",
-    "process_id": "process_id",
-    "message_id": "message_id",
-    "structured_data": "structured_data",
+    "app-name": "app-name",
+    "process-id": "process-id",
+    "message-id": "message-id",
+    "structured-data": "structured-data",
     "message": "message"
   }
 ...
@@ -117,7 +117,7 @@ You can customize the table name, the names of each column, or ignore some field
     "priority":"priority",
     "time":"timestamp",
     "hostname": "hostname",
-    "mid": "message_id",
+    "mid": "message-id",
     "message": "message"
     }
 ...
@@ -125,7 +125,7 @@ You can customize the table name, the names of each column, or ignore some field
 ```
 
 ## Custom fields
-A lot of information can be found in the actual message of each log. This is something the syslog format alone cannot account for. Logbeard lets you extract parts of the message and then use them in any other parts of the filtering/processing pipeline individually by defining `custom_fields`. This unlocks the full power of the captain, for which he is known across the seven seas!
+A lot of information can be found in the actual message of each log. This is something the syslog format alone cannot account for. Logbeard lets you extract parts of the message and then use them in any other parts of the filtering/processing pipeline individually by defining `custom-fields`. This unlocks the full power of the captain, for which he is known across the seven seas!
 
 Lets say that all our apps follow the same log format:
 ```
@@ -147,14 +147,14 @@ We can tell the captain to extract the event, the message body and the message n
     "regex": "^[^:]+",
     "type": "varchar"
     },
-  "message_body": {
+  "message-body": {
     "regex": "[^:]+$",
     "type": "varchar"
   }
   ...
 }
 ```
-Here, we are extracting the `event` and the `message_body` with regural expressions from the message and telling logbeard its type.
+Here, we are extracting the `event` and the `message-body` with regural expressions from the message and telling logbeard its type.
 
 Currently, every `custom field` extracts its info exclusively from the `message` part of the syslog standard. This is probably enough for most use cases. If not, the captain shall revise his plans. 
 
@@ -162,12 +162,14 @@ Currently, every `custom field` extracts its info exclusively from the `message`
 
 Well, for starters, we can now store them in their own columns
 ```json
+...
 "columns": {
   ...
-  "container_name": "app_name",
+  "container-name": "app-name",
   "event": "event",
   ...
 },
+...
 ```
 
 But we can also do much cooler things than that...
@@ -176,7 +178,7 @@ But we can also do much cooler things than that...
 Having extracted the event from the message, we can now use predicates directly on it in the filters section
 ```json
 "event": { 
-  "one_of": ["Warning", "Error"]
+  "one-of": ["Warning", "Error"]
 },
 ```
 A custom field, just like the already available syslog fields, doesnt need to be stored in the database. That means we can extract it for the sole purpose of using it in filters. 
@@ -188,9 +190,9 @@ Event: message message message message message message message -- number
 , the number's significance can be determined from the last digit. We can extract it like so:
 ```json
 ...
-"custom_fields":{
+"custom-fields":{
   ...
-  "last_digit": {
+  "last-digit": {
     "regex": "[0-9]$",
     "type": "int"
   },
@@ -204,7 +206,7 @@ Then we can use that in our filters
 ...
 "filters": {
 ...
-  "last_digit": { 
+  "last-digit": { 
     "gt": 3 
     },
 ...
@@ -213,7 +215,7 @@ Then we can use that in our filters
 ```
 Now, only logs with an enging number greater than 3 will pass. Great!
 
-Notice, we dont have to store the `last_digit` field we created, but we could if we wanted to. Lets also extract the entire number its self and place that instead in its own column.
+Notice, we dont have to store the `last-digit` field we created, but we could if we wanted to. Lets also extract the entire number its self and place that instead in its own column.
 ```json
 ...
 "filters": {
@@ -227,7 +229,7 @@ Notice, we dont have to store the `last_digit` field we created, but we could if
 ...
 "columns": {
 ...
-  "message_number": "num"
+  "message-number": "num"
 ...
 }
 ```
@@ -236,7 +238,7 @@ Combining this with some of our previous examples, we might get a configuration 
 ```json
 {
 "table-name":"LOGS",
-"custom_fields":{
+"custom-fields":{
   "event": {
     "regex": "^[^:]+",
     "type": "varchar"
@@ -249,26 +251,26 @@ Combining this with some of our previous examples, we might get a configuration 
     "regex": "[^ ]+$",
     "type": "int"
   },
-  "last_digit":{
+  "last-digit":{
     "regex": "[0-9]$",
     "type": "int"
   }
 },
 "filters": {
   "event": { 
-    "one_of": ["Warning", "Info"]
+    "one-of": ["Warning", "Info"]
   },
-  "last_digit": { 
+  "last-digit": { 
     "gt": 3 
   }
 },
 "columns":{
   "priority":"priority",
   "timestamp":"timestamp",
-  "container_name": "app_name",
+  "container-name": "app-name",
   "event": "event",
-  "message_body": "body",
-  "message_number": "num"
+  "message-body": "body",
+  "message-number": "num"
   }
 }
 
