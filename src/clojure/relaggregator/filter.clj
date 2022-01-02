@@ -5,15 +5,15 @@
 
 (def operators
   {:eq =
-   :not_eq #(not (= % %))
+   :not-eq #(not (= % %))
    ;; gt and lt make more sense as their opposites 
    ;; when considering how the filters are written
    :gte <=
    :lte >=
    :gt <
    :lt >
-   :one_of #(boolean (%1 %2))
-   :not_one_of #(not (boolean (%1 %2)))})
+   :one-of #(boolean (%1 %2))
+   :not-one-of #(not (boolean (%1 %2)))})
 
 
 (defn get-pred-vec
@@ -22,7 +22,7 @@
     (fn [[field-name predicate-map]]
       (let [[op-k] (keys predicate-map)
             [v]    (vals predicate-map)
-            v-set  (if (#{:one_of :not_one_of} op-k)
+            v-set  (if (#{:one-of :not-one-of} op-k)
                      (set v) v)
             op     (operators op-k)]
         [field-name #(m/attempt (op v-set %) true)]))
@@ -34,6 +34,8 @@
   (reduce
     (fn [acc [field-key predicate]]
       (let [test-val (field-key syslog-record)]
-        (and acc (predicate test-val))))
+        (if test-val
+          (and acc (predicate test-val))
+          true)))
     true pred-vec))
 

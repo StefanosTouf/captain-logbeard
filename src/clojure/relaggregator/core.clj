@@ -32,13 +32,13 @@
     [in to-db]))
 
 
-; (defn to-metrics-pipeline
-;   []
-;   (let [in (chan)
-;         out (p/metrics-processor)
-;         process (map p/syslog-to-record)]
-;     (pipeline 2 out process in)
-;     in))
+;; (defn to-metrics-pipeline
+;;   []
+;;   (let [in (chan)
+;;         out (p/metrics-processor)
+;;         process (map p/syslog-to-record)]
+;;     (pipeline 2 out process in)
+;;     in))
 
 
 (defn start
@@ -54,7 +54,8 @@
                                   (start config new-reader
                                          new-logserver conn
                                          process-ch db-ch)))
-      msg (go (>! process-ch msg))
+      msg (do (go (>! process-ch msg))
+              (recur (.readLine reader) 0))
       :else (recur (.readLine reader)
                    (+ nils 1)))))
 

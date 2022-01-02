@@ -4,9 +4,11 @@
      :as a
      :refer [>! <! go chan pipeline >!! <!! buffer go-loop timeout]]
     [clojure.java.jdbc :as jdbc]
-    [relaggregator.macros :refer [go-inf]]
     [clojure.string :as s]
-    [jdbc.pool.c3p0 :as pool]))
+    [jdbc.pool.c3p0 :as pool]
+    [relaggregator.config :as con]
+    [relaggregator.config :as conf]
+    [relaggregator.macros :refer [go-inf]]))
 
 
 (defn db-spec
@@ -34,10 +36,10 @@
    :version "INT"
    :timestamp "TIMESTAMP"
    :hostname "VARCHAR"
-   :app_name "VARCHAR"
-   :process_id "INT"
-   :message_id "VARCHAR"
-   :structured_data "VARCHAR"
+   :app-name "VARCHAR"
+   :process-id "INT"
+   :message-id "VARCHAR"
+   :structured-data "VARCHAR"
    :message "VARCHAR"})
 
 
@@ -49,8 +51,10 @@
 
 (defn init-db
   [{:keys [field-val-ref column-keys table-name custom-fields]} conn]
-  (let [column-types  (map #(let [t (syslog-fields-to-types %)]
-                              (if t t (:type (custom-fields %))))
+  (let [column-types  (map #(let [s-type (syslog-fields-to-types %)
+                                  c-type (when custom-fields 
+                                           (:type (custom-fields %)))]
+                              (if s-type s-type c-type))
                            field-val-ref)
         columns        (map name column-keys)
         create-table   (str "create table if not exists " table-name " ( "
@@ -72,8 +76,8 @@
   [config conn]
   (let [in (chan (buffer 50))]
     (go-inf
-        (<! (timeout 2000))
-        (>! in ::send))
+      (<! (timeout 2000))
+      (>! in ::send))
     (go-loop [ins []]
       (let [incoming (<! in)
             cnt-ins  (count ins)]
@@ -85,7 +89,7 @@
             (recur []))
 
           (= incoming ::send)
-          (do 
+          (do
             (println "No logs to insert")
             (recur []))
 

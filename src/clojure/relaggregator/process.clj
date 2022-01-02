@@ -51,10 +51,10 @@
      :version         (type-parser parse-number v)
      :timestamp       (type-parser parse-timestamp ts)
      :hostname        (type-parser id  hn)
-     :app_name        (type-parser id an)
-     :process_id      (type-parser parse-number pid)
-     :message_id      (type-parser id msgid)
-     :structured_data (type-parser id str-d)
+     :app-name        (type-parser id an)
+     :process-id      (type-parser parse-number pid)
+     :message-id      (type-parser id msgid)
+     :structured-data (type-parser id str-d)
      :message         (type-parser id msg)}))
 
 
@@ -66,7 +66,7 @@
 
 
 (defn custom-field-gen
-  [{custom-fields :custom_fields} syslog-record]
+  [{custom-fields :custom-fields} syslog-record]
   (let [custom-fields custom-fields]
     (if custom-fields
       (->>

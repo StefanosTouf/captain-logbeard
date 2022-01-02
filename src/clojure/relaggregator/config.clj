@@ -17,54 +17,53 @@
      :config-file    (env-or "CONFIG_PATH" "/opt/logbeard/config.json")}))
 
 
-;; (defn table-config
-;;   []
-;;   (:table (json/read-json (slurp (:config-file (config))))))
+
 
 
 (defn table-config
   []
-  (json/read-json "{
-                            \"table-name\":\"LOGS\",
-                            \"custom_fields\":{
-                              \"event\": {
-                                  \"regex\": \"^[^:]+\",
-                                  \"type\": \"varchar\"},
-                               \"ac_message\": {
-                                  \"regex\": \"[^:]+$\",
-                                  \"type\": \"varchar\"},
-                               \"message_num\": {
-                                  \"regex\": \"[^ ]+$\",
-                                  \"type\": \"int\"},
-                               \"last_digit\":{
-                                  \"regex\": \"[0-9]$\",
-                                  \"type\": \"int\"}
-                              },
-                           \"filters\": {
-                              \"event\": { 
-                                  \"one_of\": [\"Warning\", \"Info\"]},
-                              \"last_digit\": { 
-                                  \"gt\": 3 },
-                            \"columns\":{
-                              \"priority\":\"priority\",
-                              \"timestamp\":\"timestamp\",
-                              \"container_name\": \"app_name\",
-                              \"event\": \"event\",
-                              \"actual_message\": \"ac_message\",
-                              \"message_number\": \"message_num\"}
-                  }
-                  }
-                  "))
+  (json/read-json (slurp (:config-file (env-config)))))
+
+
+;; (defn table-config
+;;   []
+;;   (json/read-json "{
+;;                             \"table-name\":\"LOGS\",
+;;                             \"custom-fields\":{
+;;                               \"event\": {
+;;                                   \"regex\": \"^[^:]+\",
+;;                                   \"type\": \"varchar\"},
+;;                                \"ac-message\": {
+;;                                   \"regex\": \"[^:]+$\",
+;;                                   \"type\": \"varchar\"},
+;;                                \"message-num\": {
+;;                                   \"regex\": \"[^ ]+$\",
+;;                                   \"type\": \"int\"},
+;;                                \"last-digit\":{
+;;                                   \"regex\": \"[0-9]$\",
+;;                                   \"type\": \"int\"}
+;;                               },
+;;                            \"filters\": {
+;;                               \"event\": {
+;;                                   \"one-of\": [\"Warning\", \"Info\"]},
+;;                               \"last-digit\": {
+;;                                   \"gt\": 3 }},
+;;                             \"columns\":{
+;;                               \"pri\":\"priority\",
+;;                               \"timestamp\":\"timestamp\",
+;;                               \"container_name\": \"app-name\",
+;;                               \"event\": \"event\",
+;;                               \"actual_message\": \"ac-message\",
+;;                               \"message_number\": \"message-num\"}}"))
 
 
 (defn custom-table-spec
   []
-  (let [table-config       (table-config)
-        fields             (:fields table-config)
-        custom-fields      (:custom_fields table-config)
-        column-keys        (keys fields)
-        field-val-ref      (map keyword (vals fields))]
-    {:column-keys column-keys
+  (let [{:keys [columns
+                custom-fields]}  (table-config)
+        column-keys   (keys columns)
+        field-val-ref (map keyword (vals columns))]
+    {:column-keys   column-keys
      :field-val-ref field-val-ref
      :custom-fields custom-fields}))
 
