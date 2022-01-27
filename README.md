@@ -1,4 +1,4 @@
-# Captain logbeard "the great" arrives! 
+# Captain logbeard "The Great" arrives! 
 
 Captain logbeard is at your service to aggregate, process and forward your application logs to their destination. 
 
