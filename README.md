@@ -55,7 +55,6 @@ Using the optional `filters` configuration, logbeard can ignore any logs you don
 
 *example*
 ```json
-...
 "filters": {
   "priority": {
     "gt": 10
@@ -66,7 +65,6 @@ Using the optional `filters` configuration, logbeard can ignore any logs you don
   "event": { 
     "one-of": ["Warning", "Info"]
   }
-...
 ```
 
 Available operators:
@@ -87,21 +85,17 @@ The default config stores syslog fields to columns of the same name in a one-to-
 
 *default config file:*
 ```json
-{
-...
-  "table-name":"LOGS",
-  "columns":{
-    "priority":"priority",
-    "version": "version",
-    "timestamp":"timestamp",
-    "hostname": "hostname",
-    "app-name": "app-name",
-    "process-id": "process-id",
-    "message-id": "message-id",
-    "structured-data": "structured-data",
-    "message": "message"
-  }
-...
+"table-name":"LOGS",
+"columns":{
+  "priority":"priority",
+  "version": "version",
+  "timestamp":"timestamp",
+  "hostname": "hostname",
+  "app-name": "app-name",
+  "process-id": "process-id",
+  "message-id": "message-id",
+  "structured-data": "structured-data",
+  "message": "message"
 }
 ```
 *A useful breakdown of the syslog RFC 5424 format can be found in this article https://blog.datalust.co/seq-input-syslog/*
@@ -110,17 +104,13 @@ You can customize the table name, the names of each column, or ignore some field
 
 *sample custom config*
 ```json
-{
-...
-  "table-name":"BETTER_TABLE_NAME",
-  "columns":{
-    "priority":"priority",
-    "time":"timestamp",
-    "hostname": "hostname",
-    "mid": "message-id",
-    "message": "message"
-    }
-...
+"table-name":"BETTER_TABLE_NAME",
+"columns":{
+  "priority":"priority",
+  "time":"timestamp",
+  "hostname": "hostname",
+  "mid": "message-id",
+  "message": "message"
 }
 ```
 
@@ -141,17 +131,13 @@ Warning: there is something going on that is suspicious, yet not entirely danger
 We can tell the captain to extract the event, the message body and the message number so we can use them in the following pipeline and/or store them in individual columns.
 
 ```json
-{
-  ...
-  "event": {
-    "regex": "^[^:]+",
-    "type": "varchar"
-    },
-  "message-body": {
-    "regex": "[^:]+$",
-    "type": "varchar"
-  }
-  ...
+"event": {
+  "regex": "^[^:]+",
+  "type": "varchar"
+  },
+"message-body": {
+  "regex": "[^:]+$",
+  "type": "varchar"
 }
 ```
 Here, we are extracting the `event` and the `message-body` with regural expressions from the message and telling logbeard its type.
@@ -162,14 +148,10 @@ Currently, every `custom field` extracts its info exclusively from the `message`
 
 Well, for starters, we can now store them in their own columns
 ```json
-...
 "columns": {
-  ...
   "container-name": "app-name",
   "event": "event",
-  ...
 },
-...
 ```
 
 But we can also do much cooler things than that...
@@ -189,42 +171,31 @@ Event: message message message message message message message -- number
 ```
 , the number's significance can be determined from the last digit. We can extract it like so:
 ```json
-...
 "custom-fields":{
-  ...
   "last-digit": {
     "regex": "[0-9]$",
     "type": "int"
   },
-  ...
 }
-...
 ```
 
 Then we can use that in our filters
 ```json
-...
 "filters": {
-...
   "last-digit": { 
     "gt": 3 
     },
-...
 }
-...
 ```
 Now, only logs with an enging number greater than 3 will pass. Great!
 
 Notice, we dont have to store the `last-digit` field we created, but we could if we wanted to. Lets also extract the entire number its self and place that instead in its own column.
 ```json
-...
 "filters": {
-  ...
   "num": {
     "regex": "[^ ]+$",
     "type": "int"
   },
-  ...
 }
 ...
 "columns": {
