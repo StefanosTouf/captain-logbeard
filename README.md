@@ -197,11 +197,8 @@ Notice, we dont have to store the `last-digit` field we created, but we could if
     "type": "int"
   },
 }
-...
 "columns": {
-...
   "message-number": "num"
-...
 }
 ```
 
